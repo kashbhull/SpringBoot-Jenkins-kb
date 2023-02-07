@@ -1,10 +1,5 @@
 pipeline {
 	agent any
-	environment {
-		appIP="";
-		containerName="java";
-		imageName="javakb4";
-	}
 	stages{
 		stage('Test Application'){
 			steps{
@@ -17,60 +12,70 @@ pipeline {
 			sh 'mv ./target/surefire-reports/*.txt /home/jenkins/Tests/${BUILD_NUMBER}_tests/'
 			}
 		}
-		stage('Build Application'){
-			steps{
-			sh 'mvn clean package'
-			}
-		}
-		stage('Docker Build'){
+		stage('War Build'){
 			steps{
 			sh '''
-			docker build -t ksbhull/$imageName:latest .
+			mvn clean package
+			echo 'kash wasn't ere'
 			'''
 			}
 		}
-		stage('Push Images'){
+		stage('Moving War'){
 			steps{
 			sh '''
-			docker push ksbhull/$imageName:latest
+			mkdir -p ./wars
+			mv ./target/*.war ./wars/project_war.war
 			'''
 			}
-                }
-
+        }
+		stage('Build Docker Image'){
+			steps{
+			sh '''
+			docker build -t ksbhull/springdemo:latest .
+			'''
+			}
+        }
+		stage('Push Docker Image'){
+			steps{
+			sh '''
+			docker push ksbhull/springdemo:latest
+			'''
+			}
+        }
 		stage('Stopping Container'){
 			steps{
-
 				script {
 					if ("${GIT_BRANCH}" == 'origin/main') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@35.226.220.179 << EOF
-						docker rm -f $containerName
+						docker rm -f javabuild
 						'''
 					} else if ("${GIT_BRANCH}" == 'origin/development') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@35.225.183.14 << EOF
-						docker rm -f $containerName
+						docker rm -f javabuild
 						'''
 					}
+				}
 			}
 		}
 		stage('Restart App'){
 			steps{
-
 				script {
 					if ("${GIT_BRANCH}" == 'origin/main') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@35.226.220.179 << EOF
-						docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
+						docker run -d -p 8080:8080 --name javabuild ksbhull/springdemo:latest
 						'''
 					} else if ("${GIT_BRANCH}" == 'origin/development') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@35.225.183.14 << EOF
-						docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
+						docker run -d -p 8080:8080 --name javabuild ksbhull/springdemo:latest
 						'''
 					}
-			    }
-		    }
+				}
+			}
 		}
+
 	}
-} 
+}
