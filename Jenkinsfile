@@ -3,7 +3,7 @@ pipeline {
 	environment {
 		appIP="";
 		containerName="java";
-		imageName="javakb3";
+		imageName="javakb4";
 	}
 	stages{
 		stage('Test Application'){
