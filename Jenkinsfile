@@ -53,7 +53,7 @@ pipeline {
 					} else if ("${GIT_BRANCH}" == 'origin/feature') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@34.132.202.226 << EOF
-						docker rm -f $containerName
+						docker rm -f javabuild
 						'''
 					}
 				}
