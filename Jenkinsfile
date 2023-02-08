@@ -1,7 +1,7 @@
 pipeline {
 	agent any
 	environment {
-		appIP="34.132.202.226";
+		appIP="";
 		containerName="java";
 		imageName="javakb3";
 	}
@@ -39,16 +39,34 @@ pipeline {
 
 		stage('Stopping Container'){
 			steps{
-			sh '''ssh -i "~/.ssh/id_rsa" jenkins@$appIP << EOF
-			docker rm -f $containerName
-			'''
+				script {
+					if ("${GIT_BRANCH}" == 'origin/main') {
+						sh '''
+						ssh -i "~/.ssh/id_rsa" jenkins@34.123.249.236 << EOF
+						docker rm -f javabuild
+						'''
+					} else if ("${GIT_BRANCH}" == 'origin/feature') {
+						sh '''
+						ssh -i "~/.ssh/id_rsa" jenkins@34.132.202.226 << EOF
+						docker rm -f $containerName
+						'''
+					}
 			}
 		}
 		stage('Restart App'){
 			steps{
-			sh '''ssh -i "~/.ssh/id_rsa" jenkins@$appIP << EOF
-			docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
-			'''
+				script {
+					if ("${GIT_BRANCH}" == 'origin/main') {
+						sh '''
+						ssh -i "~/.ssh/id_rsa" jenkins@34.123.249.236 << EOF
+						docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
+						'''
+					} else if ("${GIT_BRANCH}" == 'origin/feature') {
+						sh '''
+						ssh -i "~/.ssh/id_rsa" jenkins@34.132.202.226 << EOF
+						docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
+						'''
+					}
 			}
 		}
 		stage('Clean Up'){
