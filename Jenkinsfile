@@ -25,14 +25,14 @@ pipeline {
 		stage('Docker Build'){
 			steps{
 			sh '''
-			docker build -t ksbhull/$imageName:latest .
+			docker build -t eu.gcr.io/lbg-cloud-incubation/$imageName:latest .
 			'''
 			}
 		}
 		stage('Push Images'){
 			steps{
 			sh '''
-			docker push ksbhull/$imageName:latest
+			docker push eu.gcr.io/lbg-cloud-incubation/$imageName:latest
 			'''
 			}
                 }
@@ -47,7 +47,7 @@ pipeline {
 		stage('Restart App'){
 			steps{
 			sh '''ssh -i "~/.ssh/id_rsa" jenkins@$appIP << EOF
-			docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
+			docker run -d -p 8080:8080 --name $containerName  eu.gcr.io/lbg-cloud-incubation/$imageName
 			'''
 			}
 		}
