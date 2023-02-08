@@ -1,5 +1,10 @@
 pipeline {
 	agent any
+	environment {
+		appIP="34.123.249.236";
+		containerName="java";
+		imageName="javakb3";
+	}
 	stages{
 		stage('Test Application'){
 			steps{
@@ -12,70 +17,46 @@ pipeline {
 			sh 'mv ./target/surefire-reports/*.txt /home/jenkins/Tests/${BUILD_NUMBER}_tests/'
 			}
 		}
-		stage('War Build'){
+		stage('Build Application'){
+			steps{
+			sh 'mvn clean package'
+			}
+		}
+		stage('Docker Build'){
 			steps{
 			sh '''
-			mvn clean package
-			echo 'kash wasn't ere'
+			docker build -t ksbhull/$imageName:latest .
 			'''
 			}
 		}
-		stage('Moving War'){
+		stage('Push Images'){
 			steps{
 			sh '''
-			mkdir -p ./wars
-			mv ./target/*.war ./wars/project_war.war
+			docker push ksbhull/$imageName:latest
 			'''
 			}
-        }
-		stage('Build Docker Image'){
-			steps{
-			sh '''
-			docker build -t ksbhull/springdemo:latest .
-			'''
-			}
-        }
-		stage('Push Docker Image'){
-			steps{
-			sh '''
-			docker push ksbhull/springdemo:latest
-			'''
-			}
-        }
+                }
+
 		stage('Stopping Container'){
 			steps{
-				script {
-					if ("${GIT_BRANCH}" == 'origin/main') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@34.123.249.236 << EOF
-						docker rm -f javabuild
-						'''
-					} else if ("${GIT_BRANCH}" == 'origin/feature-dev') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@34.132.202.226 << EOF
-						docker rm -f javabuild
-						'''
-					}
-				}
+			sh '''ssh -i "~/.ssh/id_rsa" jenkins@$appIP << EOF
+			docker rm -f $containerName
+			'''
 			}
 		}
 		stage('Restart App'){
 			steps{
-				script {
-					if ("${GIT_BRANCH}" == 'origin/main') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@34.123.249.236 << EOF
-						docker run -d -p 8080:8080 --name javabuild ksbhull/springdemo:latest
-						'''
-					} else if ("${GIT_BRANCH}" == 'origin/feature-dev') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@34.132.202.226 << EOF
-						docker run -d -p 8080:8080 --name javabuild ksbhull/springdemo:latest
-						'''
-					}
-				}
+			sh '''ssh -i "~/.ssh/id_rsa" jenkins@$appIP << EOF
+			docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
+			'''
 			}
 		}
-
+		stage('Clean Up'){
+			steps{
+			sh '''
+			docker system prune -f
+			'''
+			}
+		}
 	}
 }
