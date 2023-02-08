@@ -1,7 +1,7 @@
 pipeline {
 	agent any
 	environment {
-		appIP="34.123.249.236";
+		appIP="34.132.202.226";
 		containerName="java";
 		imageName="javakb3";
 	}
