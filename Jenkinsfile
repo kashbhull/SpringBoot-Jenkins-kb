@@ -31,14 +31,14 @@ pipeline {
 		stage('Build Docker Image'){
 			steps{
 			sh '''
-			docker build -t ksbhull/springdemo:latest .
+			docker build -t eu.gcr.io/lbg-cloud-incubation/springdemokb:latest .
 			'''
 			}
         }
 		stage('Push Docker Image'){
 			steps{
 			sh '''
-			docker push ksbhull/springdemo:latest
+			docker push eu.gcr.io/lbg-cloud-incubation/springdemokb:latest
 			'''
 			}
         }
@@ -65,12 +65,12 @@ pipeline {
 					if ("${GIT_BRANCH}" == 'origin/main') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@34.123.249.236 << EOF
-						docker run -d -p 8080:8080 --name javabuild  ksbhull/springdemo:latest
+						docker run -d -p 8080:8080 --name javabuild  eu.gcr.io/lbg-cloud-incubation/springdemokb:latest
 						'''
 					} else if ("${GIT_BRANCH}" == 'origin/feature') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@34.132.202.226 << EOF
-						docker run -d -p 8080:8080 --name javabuild  ksbhull/springdemo:latest
+						docker run -d -p 8080:8080 --name javabuild  eu.gcr.io/lbg-cloud-incubation/springdemokb:latest
 						'''
 					}
 				}
