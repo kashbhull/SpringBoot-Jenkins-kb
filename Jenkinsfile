@@ -46,7 +46,7 @@ pipeline {
 						ssh -i "~/.ssh/id_rsa" jenkins@35.226.220.179 << EOF
 						docker rm -f $containerName
 						'''
-					} else if ("${GIT_BRANCH}" == 'origin/development') {
+					} else if ("${GIT_BRANCH}" == 'origin/feature-dev') {
 						sh '''
 						ssh -i "~/.ssh/id_rsa" jenkins@35.225.183.14 << EOF
 						docker rm -f $containerName
