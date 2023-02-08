@@ -1,9 +1,9 @@
 pipeline {
 	agent any
 	environment {
-		appIP="";
+		appIP="34.123.249.236";
 		containerName="java";
-		imageName="javakb4";
+		imageName="javakb3";
 	}
 	stages{
 		stage('Test Application'){
@@ -39,36 +39,16 @@ pipeline {
 
 		stage('Stopping Container'){
 			steps{
-
-				script {
-					if ("${GIT_BRANCH}" == 'origin/main') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@35.226.220.179 << EOF
-						docker rm -f $containerName
-						'''
-					} else if ("${GIT_BRANCH}" == 'origin/feature-dev') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@35.225.183.14 << EOF
-						docker rm -f $containerName
-						'''
-					}
+			sh '''ssh -i "~/.ssh/id_rsa" jenkins@$appIP << EOF
+			docker rm -f $containerName
+			'''
 			}
 		}
 		stage('Restart App'){
 			steps{
-
-				script {
-					if ("${GIT_BRANCH}" == 'origin/main') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@35.226.220.179 << EOF
-						docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
-						'''
-					} else if ("${GIT_BRANCH}" == 'origin/development') {
-						sh '''
-						ssh -i "~/.ssh/id_rsa" jenkins@35.225.183.14 << EOF
-						docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
-						'''
-					}
+			sh '''ssh -i "~/.ssh/id_rsa" jenkins@$appIP << EOF
+			docker run -d -p 8080:8080 --name $containerName  ksbhull/$imageName
+			'''
 			}
 		}
 		stage('Clean Up'){
@@ -80,3 +60,4 @@ pipeline {
 		}
 	}
 }
+
