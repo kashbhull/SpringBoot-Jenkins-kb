@@ -16,7 +16,7 @@ pipeline {
 			steps{
 			sh '''
 			mvn clean package
-			echo 'Kash wasnt ere'
+			echo 'Kash was ere'
 			'''
 			}
 		}
