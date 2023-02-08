@@ -1,6 +1,6 @@
 FROM openjdk:11-jre-slim
 
-WORKDIR /app
+WORKDIR /app2
 
 COPY ./target/tdl-1.0.0.war .
 
